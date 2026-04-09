@@ -129,6 +129,18 @@
         "title": "TypeScope: Export Complexity Report",
         "category": "TypeScope",
         "icon": "$(export)"
+      },
+      {
+        "command": "typescope.benchmarkAtCursor",
+        "title": "TypeScope: Benchmark Type at Cursor",
+        "category": "TypeScope",
+        "icon": "$(beaker)"
+      },
+      {
+        "command": "typescope.benchmarkFile",
+        "title": "TypeScope: Benchmark All Types in File",
+        "category": "TypeScope",
+        "icon": "$(beaker-stop)"
       }
     ],
     "menus": {

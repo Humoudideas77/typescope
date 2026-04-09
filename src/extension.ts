@@ -11,6 +11,7 @@
 
 import * as vscode from 'vscode';
 import { TypeScopeAnalyzer } from './analyzer/analyzer';
+import { benchmarkPosition, benchmarkToScore, BenchmarkResult } from './benchmark';
 import { InlineHeatmap } from './decorations/inlineHeatmap';
 import { GutterBars } from './decorations/gutterBars';
 import { ComplexityTreeProvider, InsightsTreeProvider } from './treeView/provider';
@@ -314,6 +315,96 @@ function registerCommands(
         await vscode.workspace.fs.writeFile(uri, encoder.encode(report));
         vscode.window.showInformationMessage(`TypeScope: Report exported to ${uri.fsPath}`);
       }
+    }),
+
+    // Benchmark type performance at cursor
+    vscode.commands.registerCommand('typescope.benchmarkAtCursor', async () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) return;
+      if (!isTypeScriptFile(editor.document)) {
+        vscode.window.showWarningMessage('TypeScope benchmarking only works with TypeScript files.');
+        return;
+      }
+
+      await vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Window,
+          title: 'TypeScope: Benchmarking type at cursor...',
+          cancellable: false,
+        },
+        async () => {
+          const result = await benchmarkPosition(editor.document, editor.selection.active, {
+            iterations: 5,
+            delayMs: 200,
+          });
+
+          if (result.success) {
+            const parts = [];
+            if (result.quickInfoDuration > 0) {
+              parts.push(`Quick info: ${(result.quickInfoDuration / 1000).toFixed(1)}ms`);
+            }
+            if (result.completionDuration > 0) {
+              parts.push(`Completions: ${(result.completionDuration / 1000).toFixed(1)}ms`);
+            }
+            vscode.window.showInformationMessage(
+              `TypeScope: "${result.text}" — ${parts.join(', ')}`
+            );
+          } else {
+            vscode.window.showWarningMessage(`TypeScope: Could not benchmark this position: ${result.error}`);
+          }
+        }
+      );
+    }),
+
+    // Benchmark entire visible document
+    vscode.commands.registerCommand('typescope.benchmarkFile', async () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) return;
+      if (!isTypeScriptFile(editor.document)) {
+        vscode.window.showWarningMessage('TypeScope benchmarking only works with TypeScript files.');
+        return;
+      }
+
+      const analysis = analyzer.getCachedAnalysis(editor.document.uri.toString());
+      if (!analysis) {
+        vscode.window.showWarningMessage('Run analysis first (TypeScope: Analyze Current File).');
+        return;
+      }
+
+      await vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Window,
+          title: 'TypeScope: Benchmarking file types...',
+          cancellable: true,
+        },
+        async (progress, token) => {
+          const positions = analysis.nodes
+            .filter(n => n.score.score >= 30) // Only benchmark types with some complexity
+            .map(n => new vscode.Position(n.line, n.column));
+
+          const { benchmarkDocument } = await import('./benchmark');
+          const results = await benchmarkDocument(editor.document, positions, {
+            iterations: 3,
+            delayMs: 150,
+          });
+
+          // Show top 10 slowest
+          const top10 = results.slice(0, 10);
+          const message = top10.map((r, i) =>
+            `${i + 1}. "${r.text.substring(0, 30)}" — QI: ${(r.quickInfoDuration / 1000).toFixed(1)}ms, Comp: ${(r.completionDuration / 1000).toFixed(1)}ms`
+          ).join('\n');
+
+          if (top10.length > 0) {
+            const doc = await vscode.workspace.openTextDocument({
+              content: `# TypeScope Performance Benchmark\n\nFile: ${editor.document.fileName}\nDate: ${new Date().toISOString()}\n\n## Top 10 Slowest Types\n\n${message}\n`,
+              language: 'markdown',
+            });
+            await vscode.window.showTextDocument(doc, { preview: true });
+          } else {
+            vscode.window.showInformationMessage('No benchmark results. The types in this file respond quickly.');
+          }
+        }
+      );
     }),
   ];
 }
