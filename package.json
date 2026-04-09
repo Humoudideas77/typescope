@@ -1,0 +1,256 @@
+{
+  "name": "typescope",
+  "displayName": "TypeScope — TypeScript Type Complexity Visualizer",
+  "description": "Zero-config type complexity heat maps, gutter bars, refactoring suggestions, and trend tracking for TypeScript projects.",
+  "version": "1.0.0",
+  "publisher": "humoudideas77",
+  "author": "Humoudideas77",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Humoudideas77/typescope"
+  },
+  "bugs": {
+    "url": "https://github.com/Humoudideas77/typescope/issues"
+  },
+  "homepage": "https://github.com/Humoudideas77/typescope#readme",
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#1a1a2e",
+    "theme": "dark"
+  },
+  "keywords": [
+    "typescript",
+    "complexity",
+    "performance",
+    "visualization",
+    "heat map",
+    "refactoring",
+    "types",
+    "ast",
+    "code quality"
+  ],
+  "categories": [
+    "Programming Languages",
+    "Linters",
+    "Visualization",
+    "Debuggers"
+  ],
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "activationEvents": [
+    "onLanguage:typescript",
+    "onLanguage:typescriptreact"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "typescope-explorer",
+          "title": "TypeScope",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "typescope-explorer": [
+        {
+          "id": "typescope.fileTree",
+          "name": "Complexity Explorer",
+          "icon": "media/icon.svg",
+          "contextualTitle": "TypeScope Complexity Explorer"
+        },
+        {
+          "id": "typescope.insights",
+          "name": "Insights & Suggestions",
+          "icon": "media/icon.svg",
+          "contextualTitle": "TypeScope Insights"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "typescope.toggleHeatmap",
+        "title": "TypeScope: Toggle Inline Heat Map",
+        "category": "TypeScope",
+        "icon": "$(color-mode)"
+      },
+      {
+        "command": "typescope.toggleGutterBars",
+        "title": "TypeScope: Toggle Gutter Complexity Bars",
+        "category": "TypeScope",
+        "icon": "$(graph-line)"
+      },
+      {
+        "command": "typescope.analyzeFile",
+        "title": "TypeScope: Analyze Current File",
+        "category": "TypeScope",
+        "icon": "$(search)"
+      },
+      {
+        "command": "typescope.analyzeWorkspace",
+        "title": "TypeScope: Analyze Entire Workspace",
+        "category": "TypeScope",
+        "icon": "$(folder-search)"
+      },
+      {
+        "command": "typescope.showComplexityDetails",
+        "title": "TypeScope: Show Complexity Details",
+        "category": "TypeScope"
+      },
+      {
+        "command": "typescope.clearAnalysis",
+        "title": "TypeScope: Clear Analysis",
+        "category": "TypeScope",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "typescope.refreshTree",
+        "title": "TypeScope: Refresh Complexity Tree",
+        "category": "TypeScope",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "typescope.showTrends",
+        "title": "TypeScope: Show Complexity Trends",
+        "category": "TypeScope",
+        "icon": "$(trending-up)"
+      },
+      {
+        "command": "typescope.configureThresholds",
+        "title": "TypeScope: Configure Complexity Thresholds",
+        "category": "TypeScope",
+        "icon": "$(settings-gear)"
+      },
+      {
+        "command": "typescope.exportReport",
+        "title": "TypeScope: Export Complexity Report",
+        "category": "TypeScope",
+        "icon": "$(export)"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "typescope.showComplexityDetails",
+          "when": "editorLangId == typescript || editorLangId == typescriptreact",
+          "group": "navigation"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "typescope.refreshTree",
+          "when": "view == typescope.fileTree",
+          "group": "navigation"
+        },
+        {
+          "command": "typescope.analyzeWorkspace",
+          "when": "view == typescope.fileTree",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "typescope.analyzeFile",
+          "when": "view == typescope.fileTree && viewItem == file",
+          "group": "inline"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "TypeScope",
+      "properties": {
+        "typescope.heatmap.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable inline heat map coloring for type complexity."
+        },
+        "typescope.gutterBars.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable complexity bars in the editor gutter."
+        },
+        "typescope.thresholds.low": {
+          "type": "number",
+          "default": 30,
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Complexity score threshold for 'low' (green) category."
+        },
+        "typescope.thresholds.medium": {
+          "type": "number",
+          "default": 60,
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Complexity score threshold for 'medium' (yellow) category."
+        },
+        "typescope.heatmap.opacity": {
+          "type": "number",
+          "default": 0.15,
+          "minimum": 0.05,
+          "maximum": 0.5,
+          "description": "Opacity of inline heat map background colors."
+        },
+        "typescope.analysis.autoOnOpen": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically analyze files when they are opened."
+        },
+        "typescope.analysis.autoOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically re-analyze files when they are saved."
+        },
+        "typescope.analysis.autoOnEdit": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically re-analyze files as you type (may impact performance)."
+        },
+        "typescope.trends.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Track complexity changes over git commits."
+        },
+        "typescope.insights.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable refactoring suggestions and pattern detection."
+        },
+        "typescope.treeView.maxFiles": {
+          "type": "number",
+          "default": 100,
+          "minimum": 10,
+          "maximum": 500,
+          "description": "Maximum number of files shown in the complexity tree view."
+        },
+        "typescope.excludedPatterns": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["**/node_modules/**", "**/dist/**", "**/.d.ts"],
+          "description": "Glob patterns to exclude from analysis."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build -- --production",
+    "build": "node esbuild.js",
+    "watch": "node esbuild.js --watch",
+    "compile": "tsc -p ./",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package",
+    "pretest": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.80.0",
+    "@types/node": "^18.0.0",
+    "typescript": "^5.3.0",
+    "esbuild": "^0.20.0",
+    "@vscode/vsce": "^2.22.0",
+    "eslint": "^8.50.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0"
+  }
+}
