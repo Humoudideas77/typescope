@@ -141,3 +141,7 @@ npm run package
 Built for the [TSPerf Challenge](https://algora.io/challenges/tsperf) on Algora.
 
 Uses the [TypeScript Compiler API](https://github.com/microsoft/TypeScript) for AST analysis.
+
+---
+
+More free tools + guides: [humoudalmunawer.vercel.app](https://humoudalmunawer.vercel.app/en/#tools)
